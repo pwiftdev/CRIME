@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$CRIME</title>
+<meta name="description" content="$CRIME: no face, no name, no trace. Hold $CRIME and get paid in $XMR. A memecoin on Solana, launched on pump.fun.">
+<meta name="theme-color" content="#110F0F">
+<link rel="icon" href="media/icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Link previews (X, Telegram, Discord). After deploying, replace SITE_URL below with your live domain, e.g. https://crime.vercel.app -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="$CRIME">
+<meta property="og:title" content="$CRIME: no face. no name. no trace.">
+<meta property="og:description" content="Hold $CRIME, get paid in $XMR. A memecoin on Solana, launched on pump.fun.">
+<meta property="og:image" content="SITE_URL/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="$CRIME: no face. no name. no trace.">
+<meta name="twitter:description" content="Hold $CRIME, get paid in $XMR.">
+<meta name="twitter:image" content="SITE_URL/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112.5,300..800&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a hacker's den on an amber CRT. Every section is a terminal session, leaked file or camera feed; the cat's video and the 3D laundromat are the two windows into the real world. Single dark world. */
+:root {
+  --ink: #110F0F;        /* matches the render background so the video has no edge */
+  --ink-2: #181414;      /* terminal panes */
+  --bone: #EDE7DD;       /* plain text */
+  --ash: #857C72;        /* comments, secondary */
+  --amber: #FF6A13;      /* phosphor + the Monero patch: the one accent */
+  --amber-soft: #FFB37A; /* terminal output */
+  --alert: #FF3B2F;      /* REC and AT LARGE only */
+  --line: rgba(255, 140, 70, 0.16);
+  --font-display: "Martian Mono", ui-monospace, monospace;
+  --font-term: "VT323", "Courier New", monospace;
+  --font-body: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --gutter: clamp(18px, 4vw, 56px);
+  --glow: 0 0 18px rgba(255, 106, 19, .45);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; overflow-x: clip; }
+body { margin: 0; background: var(--ink); color: var(--bone); font-family: var(--font-body); font-size: 15.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+img, video, canvas { max-width: 100%; display: block; }
+a { color: inherit; }
+::selection { background: var(--amber); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+
+/* the den: hex rain behind, scanlines + vignette in front */
+#rain { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: .5; }
+.crt { position: fixed; inset: 0; z-index: 55; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%); }
+main, footer, .tapes { position: relative; z-index: 1; }
+
+.amber { color: var(--amber); }
+.dim { color: var(--ash); }
+.cursor { display: inline-block; width: .6em; height: 1em; background: var(--amber); vertical-align: -0.12em; margin-left: .15em; box-shadow: var(--glow); animation: blink 1.05s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.redact { background: var(--bone); color: transparent; padding: 0 .2em; user-select: none; border-radius: 1px; box-shadow: 0 0 0 1px rgba(0,0,0,.4); }
+
+/* ---------- nav: a terminal title bar ---------- */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px var(--gutter); transition: background .3s, border-color .3s; border-bottom: 1px solid transparent; font-family: var(--font-body); }
+.nav.scrolled { background: rgba(17,15,15,.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -.02em; }
+.brand img { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); }
+.brand .amber { text-shadow: var(--glow); }
+.nav-links { display: flex; align-items: center; gap: clamp(12px, 2vw, 26px); }
+.nav-links a { font-size: 12.5px; text-decoration: none; color: var(--ash); transition: color .2s, text-shadow .2s; }
+.nav-links a:hover { color: var(--amber); text-shadow: var(--glow); }
+.nav-links a.btn, .nav-links a.btn:hover { color: var(--ink); text-shadow: none; }
+.status { font-size: 11px; color: var(--ash); letter-spacing: .08em; display: flex; gap: 6px; align-items: center; }
+.status i { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); box-shadow: var(--glow); animation: blink 2.4s steps(1) infinite; }
+@media (max-width: 980px) { .nav-links a:not(.btn), .status { display: none; } }
+
+/* ---------- buttons: bracketed commands ---------- */
+.btn { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: .02em; text-transform: uppercase; text-decoration: none; padding: 14px 22px; border: 1px solid var(--amber); background: var(--amber); color: var(--ink); cursor: pointer; transition: box-shadow .2s, transform .2s, background .2s, color .2s; box-shadow: 0 0 0 rgba(255,106,19,0); }
+.btn::before { content: "["; opacity: .55; } .btn::after { content: "]"; opacity: .55; }
+.btn:hover { box-shadow: 0 0 28px rgba(255,106,19,.55); transform: translateY(-1px); }
+.btn.ghost { background: rgba(255,106,19,.04); color: var(--amber); }
+.btn.ghost:hover { background: rgba(255,106,19,.12); }
+.nav .btn { font-size: 12.5px; padding: 9px 14px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; min-height: min(56.25vw, 100vh); display: grid; align-items: center; overflow: hidden; background: var(--ink); }
+.hero-media { position: absolute; inset: 0; }
+.hero-media video { width: 100%; height: 100%; object-fit: cover; object-position: 72% 50%; -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); }
+.hero-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17,15,15,.95) 0%, rgba(17,15,15,.6) 36%, rgba(17,15,15,0) 58%); }
+.hero-copy { position: relative; z-index: 2; padding: 120px var(--gutter) 96px; max-width: 860px; display: grid; gap: 24px; }
+.boot { font-family: var(--font-term); font-size: clamp(19px, 1.5vw, 23px); line-height: 1.15; color: var(--amber-soft); margin: 0; white-space: pre-wrap; text-shadow: 0 0 10px rgba(255,106,19,.35); min-height: 3.45em; }
+.boot .ok { color: var(--amber); }
+.title { position: relative; margin: 0; font-family: var(--font-display); font-weight: 800; font-variation-settings: "wdth" 112.5; font-size: clamp(60px, 9.2vw, 150px); line-height: .9; letter-spacing: -.045em; text-transform: uppercase; white-space: nowrap; color: var(--bone); text-shadow: 0 0 30px rgba(255,106,19,.25); }
+.title .d { color: var(--amber); text-shadow: var(--glow), 0 0 60px rgba(255,106,19,.35); }
+.glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+.glitch::before { color: var(--amber); transform: translate(-4px, 0); mix-blend-mode: screen; clip-path: inset(0 0 100% 0); }
+.glitch::after { color: #FFE2C8; transform: translate(4px, 0); mix-blend-mode: screen; opacity: .7; clip-path: inset(100% 0 0 0); }
+.lede { margin: 0; font-size: clamp(16px, 1.35vw, 19px); line-height: 1.55; max-width: 44ch; color: var(--bone); }
+.lede b { color: var(--amber); font-weight: 600; text-shadow: var(--glow); }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* contract as a terminal prompt */
+.prompt { max-width: 600px; border: 1px solid var(--line); background: rgba(10,8,8,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 20px 50px rgba(0,0,0,.5), inset 0 0 30px rgba(255,106,19,.05); }
+.prompt-bar { display: flex; justify-content: space-between; gap: 10px; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 11px; color: var(--ash); }
+.prompt-bar .dots { display: flex; gap: 6px; align-items: center; }
+.prompt-bar .dots i { width: 8px; height: 8px; border-radius: 50%; background: #3A302C; }
+.prompt-bar .dots i:first-child { background: var(--amber); }
+.prompt-body { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; }
+.ca { flex: 1; font-family: var(--font-body); font-weight: 500; font-size: clamp(11.5px, 1.05vw, 14px); color: var(--amber-soft); word-break: break-all; line-height: 1.45; }
+.ca::before { content: "$ "; color: var(--amber); }
+.copy { flex: none; font-family: var(--font-display); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; background: transparent; color: var(--amber); border: 1px solid var(--amber); padding: 9px 12px; cursor: pointer; transition: background .2s, color .2s, box-shadow .2s; }
+.copy:hover, .copy.done { background: var(--amber); color: var(--ink); box-shadow: var(--glow); }
+
+.replay { position: absolute; z-index: 3; right: var(--gutter); bottom: 28px; font-family: var(--font-body); font-size: 12px; background: rgba(17,15,15,.6); color: var(--ash); border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s, color .2s; }
+.replay.show { opacity: 1; pointer-events: auto; }
+.replay:hover { color: var(--amber); }
+.hud { position: absolute; z-index: 2; right: var(--gutter); top: 92px; font-family: var(--font-term); font-size: 20px; line-height: 1.1; color: var(--amber-soft); text-align: right; text-shadow: 0 0 10px rgba(255,106,19,.35); }
+.hud .rec { color: var(--alert); text-shadow: 0 0 10px rgba(255,59,47,.6); }
+.hud .rec::before { content: "\25CF "; animation: blink 1.2s steps(1) infinite; }
+@media (max-width: 860px) {
+  .hero { min-height: 0; display: block; }
+  .hero-media { position: relative; aspect-ratio: 4 / 3.4; }
+  .hero-media video { object-position: 74% 40%; }
+  .hero-media::after { background: linear-gradient(0deg, rgba(17,15,15,1) 0%, rgba(17,15,15,0) 40%); }
+  .hero-copy { padding-top: 0; margin-top: -60px; padding-bottom: 70px; }
+  .hud { top: 66px; font-size: 16px; }
+  .replay { bottom: auto; top: calc(100vw * 0.85 - 44px); }
+}
+
+/* ---------- tape ---------- */
+.tapes { height: 190px; overflow: hidden; margin: -36px 0 0; z-index: 3; perspective: 900px; }
+.tape { position: absolute; left: -10%; width: 120%; display: flex; overflow: hidden; white-space: nowrap; background: linear-gradient(180deg, #FF8233 0%, var(--amber) 45%, #E35A0C 100%); color: var(--ink); padding: 9px 0 8px; font-family: var(--font-display); font-weight: 800; font-variation-settings: "wdth" 75; font-size: 22px; letter-spacing: .02em; text-transform: uppercase; box-shadow: 0 14px 30px rgba(0,0,0,.55), 0 0 40px rgba(255,106,19,.25), inset 0 1px 0 rgba(255,255,255,.35); }
+.tape.a { top: 56px; transform: rotate(-3.2deg) rotateY(-8deg); }
+.tape.b { top: 86px; transform: rotate(2.4deg) rotateY(8deg); background: #0B0909; color: var(--amber); box-shadow: 0 14px 30px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,106,19,.35); }
+.tape-track { display: flex; flex: none; animation: tape 40s linear infinite; }
+.tape.b .tape-track { animation-direction: reverse; animation-duration: 52s; }
+.tape-track span { padding-right: 28px; }
+.tape-track span::after { content: "///"; margin-left: 28px; opacity: .55; }
+@keyframes tape { to { transform: translateX(-50%); } }
+
+/* ---------- section scaffolding ---------- */
+section { position: relative; }
+.wrap { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); }
+.path { font-family: var(--font-body); font-size: 13px; color: var(--ash); }
+.path .amber { text-shadow: var(--glow); }
+.h2 { margin: 6px 0 0; font-family: var(--font-display); font-weight: 800; font-variation-settings: "wdth" 112.5; font-size: clamp(34px, 5.4vw, 80px); line-height: .95; letter-spacing: -.045em; text-transform: uppercase; text-wrap: balance; }
+.ev-side .h2 { font-size: clamp(34px, 4.2vw, 64px); }
+.h2 .amber { text-shadow: var(--glow), 0 0 50px rgba(255,106,19,.3); }
+.section-head { display: grid; gap: 6px; margin-bottom: 44px; }
+.sub { margin: 14px 0 0; max-width: 60ch; color: #CFC6BB; }
+.tilt { transform-style: preserve-3d; transition: transform .5s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+
+/* terminal window, used everywhere */
+.term { position: relative; background: linear-gradient(180deg, rgba(28,22,20,.94), rgba(14,11,11,.96)); border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+  box-shadow: 0 40px 70px -30px rgba(0,0,0,.95), 0 0 0 1px rgba(0,0,0,.6), 0 0 40px rgba(255,106,19,.07), inset 0 1px 0 rgba(255,255,255,.06); }
+.term::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px), linear-gradient(115deg, rgba(255,255,255,.06), transparent 32%); }
+.term-bar { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 11.5px; color: var(--ash); background: rgba(0,0,0,.25); }
+.term-bar .dots { display: flex; gap: 6px; } .term-bar .dots i { width: 9px; height: 9px; border-radius: 50%; background: #3A302C; } .term-bar .dots i:first-child { background: var(--amber); box-shadow: var(--glow); }
+.term-bar .t { flex: 1; text-align: center; }
+.term-body { padding: 18px 20px 22px; font-family: var(--font-body); font-size: 14.5px; line-height: 1.75; }
+.term-body .cmd { color: var(--bone); }
+.term-body .cmd::before { content: "root@crime:~$ "; color: var(--amber); }
+.term-body .out { color: var(--amber-soft); }
+.term-body .c { color: var(--ash); }
+
+/* ---------- /rewards: the laundromat ---------- */
+.laundry { padding: 80px 0 90px; overflow: clip; background: radial-gradient(760px 560px at 34% 50%, rgba(255,106,19,.16), transparent 70%); }
+.laundry-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr); gap: clamp(10px, 3vw, 40px); align-items: center; }
+@media (max-width: 900px) { .laundry-grid { grid-template-columns: minmax(0, 1fr); } }
+.stage { position: relative; aspect-ratio: 1 / .9; min-height: 420px; }
+.stage canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+.stage-fallback { position: absolute; inset: 14%; display: grid; place-items: center; }
+.stage-fallback img { width: 60%; border-radius: 50%; }
+.stage-hud { position: absolute; left: 3%; top: 3%; font-family: var(--font-term); font-size: 19px; line-height: 1.1; color: var(--amber-soft); pointer-events: none; text-shadow: 0 0 10px rgba(255,106,19,.35); }
+.laundry-copy { display: grid; gap: 18px; align-content: center; }
+.laundry .h2 { font-size: clamp(34px, 4.4vw, 70px); }
+.laundry .sub { font-size: 17px; margin: 0; }
+.washline { font-size: 14px; color: var(--amber-soft); }
+.bar { color: var(--amber); text-shadow: var(--glow); }
+.js .reveal > * { opacity: 0; transform: translateY(26px); filter: blur(6px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1), filter .8s ease; }
+.js .reveal.in > * { opacity: 1; transform: none; filter: none; }
+.reveal.in > :nth-child(2) { transition-delay: .12s; } .reveal.in > :nth-child(3) { transition-delay: .26s; } .reveal.in > :nth-child(4) { transition-delay: .4s; }
+
+/* ---------- /memes: the 3D wall ---------- */
+.memes { padding: 120px 0 90px; border-top: 1px solid var(--line); overflow: clip; }
+.memes .section-head { margin-bottom: 10px; }
+.wall-view { --tile: 300px; position: relative; height: calc(var(--tile) * 2.35); perspective: 900px; overflow: clip; cursor: grab; touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 10%, #000 90%, transparent 100%); }
+.wall-view.drag { cursor: grabbing; }
+.wall-view::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, var(--ink) 0, transparent 14%, transparent 86%, var(--ink) 100%); }
+@media (max-width: 700px) { .wall-view { --tile: 190px; perspective: 640px; } }
+.wall { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+.meme { position: absolute; width: var(--tile); height: var(--tile); left: calc(var(--tile) / -2); top: calc(var(--tile) / -2); margin: 0; transform-style: preserve-3d; backface-visibility: hidden; }
+.meme-in { position: relative; width: 100%; height: 100%; overflow: hidden; background: #000; border: 1px solid rgba(255,140,70,.22); transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s; box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 30px 50px -20px rgba(0,0,0,.9); }
+.meme:hover .meme-in { transform: translateZ(70px) scale(1.05); box-shadow: 0 0 0 1px var(--amber), 0 0 40px rgba(255,106,19,.45); }
+.meme img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+.meme-in::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px); }
+.meme .cap { position: absolute; left: 5%; right: 5%; z-index: 1; text-align: center; font-family: "Anton", Impact, "Arial Narrow", sans-serif; font-size: calc(var(--tile) * .088); line-height: 1.02; text-transform: uppercase; color: #fff; letter-spacing: .01em; paint-order: stroke fill; -webkit-text-stroke: calc(var(--tile) * .012) #000; text-shadow: 0 2px 0 #000, 0 0 10px rgba(0,0,0,.5); text-wrap: balance; }
+.meme .cap.t { top: 4%; } .meme .cap.b { bottom: 5%; }
+.meme .cap .o { color: var(--amber); }
+.wall-hint { text-align: center; font-size: 12px; color: var(--ash); margin-top: 6px; }
+
+/* ---------- /dossier ---------- */
+.dossier { padding: 120px 0 130px; border-top: 1px solid var(--line); }
+.dossier-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 4.5vw, 64px); align-items: start; }
+@media (max-width: 980px) { .dossier-grid { grid-template-columns: minmax(0, 1fr); } }
+.feeds { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cam { position: relative; margin: 0; border: 1px solid var(--line); background: #000; overflow: hidden; box-shadow: 0 30px 50px -20px rgba(0,0,0,.9), 0 0 30px rgba(255,106,19,.08); }
+.cam img { width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(1) sepia(1) saturate(2.6) hue-rotate(-12deg) contrast(1.15) brightness(.85); }
+.cam::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.35) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6)); }
+.cam::after { content: ""; position: absolute; inset: 10px; z-index: 1; pointer-events: none;
+  background: linear-gradient(var(--amber), var(--amber)) top left / 16px 2px no-repeat, linear-gradient(var(--amber), var(--amber)) top left / 2px 16px no-repeat,
+  linear-gradient(var(--amber), var(--amber)) top right / 16px 2px no-repeat, linear-gradient(var(--amber), var(--amber)) top right / 2px 16px no-repeat,
+  linear-gradient(var(--amber), var(--amber)) bottom left / 16px 2px no-repeat, linear-gradient(var(--amber), var(--amber)) bottom left / 2px 16px no-repeat,
+  linear-gradient(var(--amber), var(--amber)) bottom right / 16px 2px no-repeat, linear-gradient(var(--amber), var(--amber)) bottom right / 2px 16px no-repeat; opacity: .8; }
+.cam figcaption { position: absolute; z-index: 2; left: 16px; right: 16px; top: 14px; display: flex; justify-content: space-between; font-family: var(--font-term); font-size: 18px; color: var(--amber-soft); text-shadow: 0 0 8px rgba(0,0,0,.9); }
+.cam .rec { color: var(--alert); } .cam .rec::before { content: "\25CF "; animation: blink 1.2s steps(1) infinite; }
+.cam .ts { position: absolute; z-index: 2; left: 16px; bottom: 12px; font-family: var(--font-term); font-size: 17px; color: var(--amber-soft); }
+.feeds .wide { grid-column: 1 / -1; }
+.match { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 16px; font-family: var(--font-term); font-size: 20px; color: var(--amber-soft); border: 1px solid var(--line); background: rgba(0,0,0,.35); }
+.match b { color: var(--amber); font-weight: 400; text-shadow: var(--glow); }
+.dossier .term-body dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 0 18px; }
+.dossier .term-body dt { color: var(--ash); }
+.dossier .term-body dd { margin: 0; color: var(--amber-soft); }
+.charges { margin: 14px 0 0; padding: 0; list-style: none; }
+.charges li { color: var(--bone); } .charges li span { color: var(--amber); }
+.atlarge { display: inline-block; margin-top: 16px; font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: .02em; color: var(--alert); border: 1px solid var(--alert); padding: 6px 12px; text-shadow: 0 0 12px rgba(255,59,47,.6); box-shadow: 0 0 22px rgba(255,59,47,.2) inset; animation: blink 1.6s steps(1) infinite; }
+
+/* ---------- /ops: how to buy ---------- */
+.ops { padding: 120px 0 130px; border-top: 1px solid var(--line); }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 1060px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+.step .num { font-family: var(--font-display); font-weight: 800; font-variation-settings: "wdth" 112.5; font-size: 64px; line-height: .9; letter-spacing: -.05em; color: var(--amber); text-shadow: var(--glow), 0 0 40px rgba(255,106,19,.3); }
+.step h3 { margin: 10px 0 8px; font-family: var(--font-display); font-weight: 700; font-size: 17px; text-transform: lowercase; color: var(--bone); }
+.step .term-body { font-size: 13.5px; }
+.step .term-body a { color: var(--amber); text-underline-offset: 3px; }
+
+/* ---------- /evidence: token.json on a monitor ---------- */
+.evidence { padding: 120px 0 140px; border-top: 1px solid var(--line); perspective: 1400px; }
+.evidence-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: clamp(28px, 4vw, 60px); align-items: center; }
+@media (max-width: 980px) { .evidence-grid { grid-template-columns: minmax(0, 1fr); } }
+.monitor { padding: 22px 22px 46px; border-radius: 22px; background: linear-gradient(160deg, #2A2523, #141111 60%); box-shadow: 0 60px 90px -30px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -2px 0 rgba(0,0,0,.6); transform: rotateY(9deg) rotateX(3deg); position: relative; }
+.monitor::after { content: "CRIME-OS"; position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-weight: 700; font-size: 10px; letter-spacing: .3em; color: #5A4F49; }
+.screen { position: relative; border-radius: 14px / 18px; background: radial-gradient(ellipse at 50% 40%, #1E120B 0%, #0A0706 75%); padding: 26px 28px; overflow: hidden; box-shadow: inset 0 0 60px rgba(0,0,0,.9), inset 0 0 0 2px #000, 0 0 50px rgba(255,106,19,.12); }
+.screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 1px, transparent 1px 3px), radial-gradient(ellipse at 30% 10%, rgba(255,255,255,.08), transparent 40%); }
+.screen pre { margin: 0; font-family: var(--font-term); font-size: clamp(18px, 1.75vw, 25px); line-height: 1.22; color: var(--amber-soft); text-shadow: 0 0 8px rgba(255,106,19,.55); white-space: pre-wrap; word-break: break-all; }
+.screen .k { color: var(--amber); } .screen .p { color: var(--bone); }
+.ev-side { display: grid; gap: 20px; }
+.ev-side .links { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ---------- finale ---------- */
+.finale { position: relative; overflow: hidden; padding: 150px 0 130px; border-top: 1px solid var(--line); }
+.finale-bg { position: absolute; inset: 0; background: url("media/hero-final.jpg") 78% 30% / cover no-repeat; opacity: .4; }
+.finale-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--ink) 20%, rgba(17,15,15,.35) 62%, rgba(17,15,15,.85)), linear-gradient(0deg, var(--ink), transparent 40%), repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 1px, transparent 1px 3px); }
+.finale .wrap { position: relative; display: grid; gap: 24px; }
+.mega { position: relative; margin: 0; font-family: var(--font-display); font-weight: 800; font-variation-settings: "wdth" 112.5; font-size: clamp(56px, 12vw, 190px); line-height: .9; letter-spacing: -.05em; text-transform: uppercase; }
+.mega .amber { text-shadow: var(--glow), 0 0 70px rgba(255,106,19,.35); }
+
+/* ---------- footer ---------- */
+footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--ash); font-size: 12.5px; }
+footer .wrap { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+@media (max-width: 760px) { footer .wrap { grid-template-columns: 1fr; } }
+footer p { margin: 0; max-width: 84ch; }
+footer p::before { content: "// "; color: var(--amber); }
+.socials { display: flex; gap: 18px; }
+.socials a { text-decoration: none; color: var(--amber); }
+.toast { position: fixed; left: 50%; bottom: 26px; z-index: 60; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--amber); color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 13px; text-transform: uppercase; padding: 11px 16px; box-shadow: var(--glow); transition: opacity .25s, transform .25s; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .glitch::before { animation: g1 4.2s infinite steps(1); }
+  .glitch::after { animation: g2 4.2s infinite steps(1); }
+  .title { animation: flicker 1.1s steps(2) both .2s; }
+  body::after { content: ""; position: fixed; inset: 0; z-index: 56; pointer-events: none; background: rgba(255,140,60,.018); animation: hum 7s infinite; }
+}
+@keyframes g1 { 0%, 86%, 100% { clip-path: inset(0 0 100% 0); } 87% { clip-path: inset(12% 0 70% 0); transform: translate(-6px, 0); } 89% { clip-path: inset(55% 0 20% 0); transform: translate(5px, 0); } 91% { clip-path: inset(80% 0 4% 0); transform: translate(-3px, 0); } 93% { clip-path: inset(30% 0 50% 0); transform: translate(7px, 0); } }
+@keyframes g2 { 0%, 86%, 100% { clip-path: inset(100% 0 0 0); } 88% { clip-path: inset(62% 0 18% 0); transform: translate(6px, 0); } 90% { clip-path: inset(5% 0 78% 0); transform: translate(-5px, 0); } 92% { clip-path: inset(40% 0 40% 0); transform: translate(4px, 0); } }
+@keyframes flicker { 0% { opacity: 0; } 30% { opacity: 1; } 45% { opacity: .3; } 60%, 100% { opacity: 1; } }
+@keyframes hum { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tape-track, .cursor, .atlarge, .status i, .cam .rec::before, .hud .rec::before { animation: none; } html { scroll-behavior: auto; } .tilt { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="crt" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top" aria-label="$CRIME home"><img src="media/icon.png" alt=""><span><span class="amber">$</span>CRIME</span></a>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#rewards">./rewards</a>
+    <a href="#memes">./memes</a>
+    <a href="#ops">./ops</a>
+    <a href="#evidence">./evidence</a>
+    <span class="status"><i></i>TOR&nbsp;ON &middot; TRACE&nbsp;0%</span>
+    <a class="btn" data-link="pump" href="#">Buy $CRIME</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero" aria-label="$CRIME">
+    <div class="hero-media">
+      <video id="heroVideo" autoplay muted playsinline preload="auto" poster="media/hero-poster.jpg" aria-label="A tabby cat turns to the camera and pulls on a black balaclava with an orange Monero patch.">
+        <source src="media/crime-hero.webm" type="video/webm">
+        <source src="media/crime-hero.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="hud" aria-hidden="true"><span class="rec">REC</span><br>CAM_01 &middot; SUBJECT LOCKED<br><span id="clock">00:00:00</span></div>
+    <button class="replay" id="replay" type="button">&gt; replay --footage</button>
+    <div class="hero-copy">
+      <pre class="boot" id="boot">&gt; routing through tor ........ <span class="ok">[ok]</span>
+&gt; identity .................. <span class="ok">[redacted]</span>
+&gt; payload ................... <span class="ok">$CRIME</span></pre>
+      <h1 class="title glitch" data-text="$CRIME"><span class="d">$</span>CRIME</h1>
+      <p class="lede">no face. no name. no trace.<br>hold the bag, get paid in <b>untraceable $XMR</b>.</p>
+      <div class="prompt" role="group" aria-label="Contract address">
+        <div class="prompt-bar"><span class="dots"><i></i><i></i><i></i></span><span>contract &middot; solana</span></div>
+        <div class="prompt-body"><code class="ca" data-ca></code><button class="copy" type="button" data-copy>Copy</button></div>
+      </div>
+      <div class="cta-row">
+        <a class="btn" data-link="pump" href="#">Buy on pump.fun</a>
+        <a class="btn ghost" data-link="dex" href="#">View chart</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="tapes" aria-hidden="true">
+    <div class="tape a"><div class="tape-track" data-tape="Access denied|Do not cross|$CRIME|Holders paid in XMR"></div></div>
+    <div class="tape b"><div class="tape-track" data-tape="Trace: 0%|Identity: redacted|$CRIME|Spin cycle running"></div></div>
+  </div>
+
+  <section class="laundry" id="rewards" aria-labelledby="rewards-h">
+    <div class="wrap laundry-grid">
+      <div class="stage" id="stage" role="img" aria-label="A washing machine tumbling $CRIME coins that come out as Monero coins.">
+        <div class="stage-fallback" id="stageFallback"><img src="media/coin_xmr.png" alt=""></div>
+        <div class="stage-hud">MACHINE_01<br>IN: $CRIME &middot; OUT: $XMR</div>
+      </div>
+      <div class="laundry-copy reveal" id="laundryCopy">
+        <span class="path">~/<span class="amber">rewards</span>/laundromat</span>
+        <h2 class="h2" id="rewards-h">Dirty bags in.<br><span class="amber">Clean $XMR</span> out.</h2>
+        <p class="sub">Hold $CRIME. Every holder gets paid in Monero.</p>
+        <div class="washline">status: <span class="bar" id="washbar">[&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9608;&#9617;&#9617;&#9617;&#9617;] 66%</span> <span id="washword">washing</span><span class="cursor"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="memes" id="memes" aria-labelledby="memes-h">
+    <div class="wrap section-head">
+      <span class="path">~/<span class="amber">memes</span>/privacy_wall</span>
+      <h2 class="h2" id="memes-h">Privacy is not a <span class="amber">$crime</span></h2>
+      <p class="sub">The wall of evidence. Drag it around.</p>
+    </div>
+    <div class="wall-view" id="wallView" aria-label="A rotating 3D wall of cat privacy memes" role="region">
+      <div class="wall" id="wall"></div>
+    </div>
+  </section>
+
+  <section class="ops" id="ops" aria-labelledby="ops-h">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="path">~/<span class="amber">ops</span>/how_to_buy.md</span>
+        <h2 class="h2" id="ops-h">How to commit <span class="amber">$CRIME</span></h2>
+      </div>
+      <div class="steps">
+        <article class="term step tilt" data-tilt="9"><div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">op_01</span></div><div class="term-body"><span class="num">01</span><h3>get_a_wallet</h3><div class="cmd">install phantom</div><div class="c"># or solflare. seed phrase on paper, kept offline.</div></div></article>
+        <article class="term step tilt" data-tilt="9"><div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">op_02</span></div><div class="term-body"><span class="num">02</span><h3>load_sol</h3><div class="cmd">fund --asset SOL</div><div class="c"># buy sol on an exchange and send it to your wallet.</div></div></article>
+        <article class="term step tilt" data-tilt="9"><div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">op_03</span></div><div class="term-body"><span class="num">03</span><h3>go_to_the_scene</h3><div class="cmd">open <a data-link="pump" href="#">pump.fun/$CRIME</a></div><div class="c"># connect your wallet.</div></div></article>
+        <article class="term step tilt" data-tilt="9"><div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">op_04</span></div><div class="term-body"><span class="num">04</span><h3>commit</h3><div class="cmd">swap SOL &gt; $CRIME</div><div class="c"># check the contract matches this page. then wait for the $XMR.</div></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="evidence" id="evidence" aria-labelledby="evidence-h">
+    <div class="wrap evidence-grid">
+      <div class="monitor tilt" data-tilt="6">
+        <div class="screen"><pre><span class="p">root@crime:~$</span> cat token.json
+{
+  <span class="k">"ticker"</span>:    "$CRIME",
+  <span class="k">"chain"</span>:     "solana",
+  <span class="k">"launched"</span>:  "pump.fun",
+  <span class="k">"supply"</span>:    1000000000,
+  <span class="k">"rewards"</span>:   "XMR",
+  <span class="k">"holders"</span>:   "all of them",
+  <span class="k">"contract"</span>:  "<span data-ca></span>"
+}
+<span class="p">root@crime:~$</span> <span class="cursor"></span></pre></div>
+      </div>
+      <div class="ev-side">
+        <div class="section-head" style="margin-bottom:0">
+          <span class="path">~/<span class="amber">evidence</span>/token.json</span>
+          <h2 class="h2" id="evidence-h">The <span class="amber">evidence</span></h2>
+          <p class="sub">Everything on the record. Verify the contract before you buy, then follow the money.</p>
+        </div>
+        <div class="links">
+          <a class="btn" data-link="pump" href="#">pump.fun</a>
+          <a class="btn ghost" data-link="dex" href="#">DexScreener</a>
+          <a class="btn ghost" data-link="solscan" href="#">Solscan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="finale" aria-labelledby="finale-h">
+    <div class="finale-bg" aria-hidden="true"></div>
+    <div class="wrap">
+      <span class="path">root@crime:~$ ./mask_up.sh</span>
+      <h2 class="mega glitch" id="finale-h" data-text="Mask up.">Mask <span class="amber">up.</span></h2>
+      <p class="lede">no face. no trace. no questions.<br>hold $CRIME, get paid in <b>$XMR</b>.</p>
+      <div class="prompt" role="group" aria-label="Contract address">
+        <div class="prompt-bar"><span class="dots"><i></i><i></i><i></i></span><span>contract &middot; solana</span></div>
+        <div class="prompt-body"><code class="ca" data-ca></code><button class="copy" type="button" data-copy>Copy</button></div>
+      </div>
+      <div class="cta-row"><a class="btn" data-link="pump" href="#">Buy $CRIME</a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div style="display:grid; gap:12px;">
+      <p>$CRIME is a memecoin made for fun. No intrinsic value, no expectation of financial return. $XMR rewards depend on the project's reward system and are not guaranteed. Not financial advice. Only buy what you can afford to lose.</p>
+      <p>The laundromat is a joke and the cat is fictional. Not affiliated with the Monero Project.</p>
+      <p>&copy; $CRIME &middot; subject_001 &middot; connection closed</p>
+    </div>
+    <div class="socials" id="socials"></div>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite">Copied</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // ---- Edit these ----
+  const CA = "BN4Z5NtntHhu6p3atEqkeAVi8Bn9Ri2QTv8FD7iupump";
+  const SOCIALS = { "X": "", "Telegram": "" };   // paste links here; empty ones stay hidden
+
+  const LINKS = { pump: "https://pump.fun/coin/" + CA, dex: "https://dexscreener.com/solana/" + CA, solscan: "https://solscan.io/token/" + CA };
+  document.querySelectorAll("[data-link]").forEach(a => { a.href = LINKS[a.dataset.link]; a.target = "_blank"; a.rel = "noopener"; });
+  document.querySelectorAll("[data-ca]").forEach(el => el.textContent = CA);
+  const soc = document.getElementById("socials");
+  Object.entries(SOCIALS).forEach(([n, u]) => { if (!u) return; const a = document.createElement("a"); a.href = u; a.textContent = "./" + n.toLowerCase(); a.target = "_blank"; a.rel = "noopener"; soc.appendChild(a); });
+  document.querySelectorAll("[data-tape]").forEach(t => {
+    const run = Array.from({ length: 6 }, () => t.dataset.tape.split("|").map(w => `<span>${w}</span>`).join("")).join("");
+    t.innerHTML = run + run;
+  });
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.documentElement.classList.add("js");
+
+  // copy contract address
+  const toast = document.getElementById("toast"); let tt;
+  const showToast = m => { toast.textContent = m; toast.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove("show"), 1800); };
+  document.querySelectorAll("[data-copy]").forEach(btn => btn.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(CA); btn.textContent = "Copied"; btn.classList.add("done"); showToast("> contract copied"); }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(btn.parentElement.querySelector("[data-ca]")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); showToast("> selected. press ctrl+c"); }
+    setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("done"); }, 2000);
+  }));
+
+  // boot sequence: retype the visible lines once on load
+  const boot = document.getElementById("boot");
+  if (!reduce) {
+    const full = boot.innerHTML; const plain = boot.textContent; let i = 0;
+    boot.textContent = "";
+    const step = () => { i += 3; if (i >= plain.length) { boot.innerHTML = full; return; } boot.textContent = plain.slice(0, i) + "█"; setTimeout(step, 16); };
+    setTimeout(step, 250);
+  }
+  // camera clock
+  const clock = document.getElementById("clock");
+  const tick = () => { const d = new Date(); clock.textContent = d.toTimeString().slice(0, 8); };
+  tick(); setInterval(tick, 1000);
+
+  // hero video
+  const v = document.getElementById("heroVideo"), replay = document.getElementById("replay");
+  if (reduce) { v.removeAttribute("autoplay"); v.pause(); v.poster = "media/hero-final.jpg"; replay.classList.add("show"); }
+  v.addEventListener("ended", () => replay.classList.add("show"));
+  replay.addEventListener("click", () => { v.currentTime = 0; v.play().catch(() => {}); replay.classList.remove("show"); });
+  if (!reduce) v.play().catch(() => replay.classList.add("show"));
+
+  const nav = document.getElementById("nav");
+  const onScroll = () => nav.classList.toggle("scrolled", scrollY > 40);
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  // wash progress
+  const bar = document.getElementById("washbar"), word = document.getElementById("washword");
+  let pct = 66;
+  if (!reduce) setInterval(() => {
+    pct = pct >= 100 ? 0 : pct + 2;
+    const n = Math.round(pct / 100 * 12);
+    bar.textContent = "[" + "█".repeat(n) + "░".repeat(12 - n) + "] " + String(pct).padStart(3, " ") + "%";
+    word.textContent = pct >= 100 ? "clean. paid out" : pct < 40 ? "rinsing" : "washing";
+  }, 160);
+
+  // laundromat scroll-in: progress 0..1 as the section enters
+  window.__washIn = reduce ? 1 : 0;
+  const lsec = document.getElementById("rewards"), lcopy = document.getElementById("laundryCopy");
+  const onWashScroll = () => {
+    const r = lsec.getBoundingClientRect(), vh = innerHeight;
+    const p = Math.min(1, Math.max(0, (vh - r.top) / (vh * 0.75)));
+    window.__washIn = reduce ? 1 : p;
+    if (p > 0.82 || reduce) lcopy.classList.add("in");
+  };
+  addEventListener("scroll", onWashScroll, { passive: true }); onWashScroll();
+
+  // pointer tilt
+  const fine = matchMedia("(pointer: fine)").matches;
+  if (fine && !reduce) document.querySelectorAll("[data-tilt]").forEach(el => {
+    const max = +el.dataset.tilt || 6; const base = el.classList.contains("monitor") ? " rotateY(9deg) rotateX(3deg)" : "";
+    el.addEventListener("pointermove", e => {
+      const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      el.style.transform = `perspective(1100px) rotateX(${(0.5 - y) * max}deg) rotateY(${(x - 0.5) * max}deg)`;
+    });
+    el.addEventListener("pointerleave", () => { el.style.transform = ""; });
+  });
+
+  // hex rain in the background
+  (function rain() {
+    const c = document.getElementById("rain"), g = c.getContext("2d");
+    const glyphs = "0123456789ABCDEF$XMRCRIME".split("");
+    let cols, drops, fs = 15, w, h;
+    const size = () => { const dpr = Math.min(devicePixelRatio, 2); w = innerWidth; h = innerHeight; c.width = w * dpr; c.height = h * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); cols = Math.ceil(w / fs); drops = Array.from({ length: cols }, () => Math.random() * -h / fs); g.font = fs + "px VT323, monospace"; };
+    size(); addEventListener("resize", size);
+    const draw = () => {
+      g.fillStyle = "rgba(17,15,15,0.12)"; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < cols; i++) {
+        if (i % 3) continue;                       // sparse: one column in three
+        const ch = glyphs[(Math.random() * glyphs.length) | 0];
+        const y = drops[i] * fs;
+        g.fillStyle = Math.random() < 0.04 ? "rgba(255,179,122,0.55)" : "rgba(255,106,19,0.22)";
+        g.fillText(ch, i * fs, y);
+        if (y > h && Math.random() > 0.975) drops[i] = 0;
+        drops[i] += 0.55;
+      }
+    };
+    if (reduce) { for (let k = 0; k < 140; k++) draw(); return; }
+    let last = 0; const loop = ts => { if (ts - last > 50) { draw(); last = ts; } requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  })();
+
+
+  // ---------- the meme wall: a concave 3D wall you look into ----------
+  (function memeWall() {
+    const MEMES = [
+      ["m02", "Privacy is not a", "<span class='o'>$crime</span>"],
+      ["m01", "They can see your wallet", "They can't see mine"],
+      ["m06", "Balaclava on", "Trace: 0%"],
+      ["m03", "When someone asks", "for your wallet address"],
+      ["m09", "Caught on camera", "Still untraceable"],
+      ["m05", "Me ignoring", "the chain analysts"],
+      ["m04", "Sender: ??? Receiver: ???", "Amount: ???"],
+      ["m12", "Who's behind $crime?", "[redacted]"],
+      ["m10", "My entire", "identity"],
+      ["m08", "On a public ledger", "everyone is a suspect"],
+      ["m11", "Switching to", "privacy mode"],
+      ["m13", "My bags are clean", "Don't ask how"],
+      ["m07", "Smile, you're on", "the blockchain"],
+      ["m14", "Doxx yourself for an airdrop?", "No."],
+      ["m16", "Chain analysts have entered the chat", "Cat has left the chat"],
+      ["m15", "If it can't be traced", "it never happened"],
+      ["m17", "Stealth address", "unlocked"],
+      ["m18", "Not your keys", "Not your face"],
+      ["m19", "Block explorer", "can't explore this"],
+      ["m20", "Got paid in XMR", "Can't say how much"],
+      ["m21", "I don't always transact", "but when I do, nobody knows"],
+      ["m23", "Public wallet?", "In this economy?"],
+      ["m24", "Mask up", "or get traced"],
+      ["m22", "Hold $crime", "Get paid in <span class='o'>$XMR</span>"]
+    ];
+    const view = document.getElementById("wallView"), wall = document.getElementById("wall");
+    const COLS = 12, ROWS = 2;
+    const tiles = MEMES.map(([img, top, bot], i) => {
+      const f = document.createElement("figure"); f.className = "meme";
+      f.innerHTML = `<div class="meme-in"><img src="media/memes/${img}.jpg" alt="" loading="lazy" draggable="false"><span class="cap t">${top}</span><span class="cap b">${bot}</span></div><figcaption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">${(top + " " + bot).replace(/<[^>]+>/g, "")}</figcaption>`;
+      wall.appendChild(f); return { el: f, col: i % COLS, row: Math.floor(i / COLS) };
+    });
+    let R = 600, tile = 300, gap = 26, rot = 0, vel = 0, dragging = false, lastX = 0;
+    const layout = () => {
+      tile = parseFloat(getComputedStyle(view).getPropertyValue("--tile")) || 300; gap = tile * 0.09;
+      R = (tile + gap) / (2 * Math.tan(Math.PI / COLS));
+      tiles.forEach(t => {
+        const a = t.col * 360 / COLS, y = (t.row - (ROWS - 1) / 2) * (tile + gap);
+        t.angle = a; t.el.style.transform = `rotateY(${a}deg) translateZ(${-R}px) translateY(${y}px)`;
+      });
+    };
+    const apply = () => {
+      wall.style.transform = `translateZ(${R - tile * 0.95}px) rotateY(${rot}deg)`;
+      tiles.forEach(t => { let d = ((t.angle + rot) % 360 + 540) % 360 - 180; t.el.style.visibility = Math.abs(d) > 92 ? "hidden" : "visible"; });
+    };
+    layout(); apply(); addEventListener("resize", () => { layout(); apply(); });
+    view.addEventListener("pointerdown", e => { dragging = true; lastX = e.clientX; view.classList.add("drag"); view.setPointerCapture(e.pointerId); });
+    view.addEventListener("pointermove", e => { if (!dragging) return; const dx = e.clientX - lastX; lastX = e.clientX; rot += dx * 0.12; vel = dx * 0.12; apply(); });
+    const end = () => { dragging = false; view.classList.remove("drag"); };
+    view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
+    if (reduce) return;
+    let on = false;
+    new IntersectionObserver(es => { on = es[0].isIntersecting; if (on) requestAnimationFrame(spin); }).observe(view);
+    function spin() { if (!on) return; if (!dragging) { vel *= 0.95; rot += vel - 0.07; apply(); } requestAnimationFrame(spin); }
+  })();
+
+  // ---------- the laundromat: a Three.js washing machine that turns $CRIME into $XMR ----------
+  (function laundromat() {
+    const stage = document.getElementById("stage");
+    if (!window.THREE) return;
+    let renderer;
+    try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); } catch (e) { return; }
+    document.getElementById("stageFallback").remove();
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+    stage.prepend(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+    camera.position.set(0, 0.05, 7.0);
+    const envScene = new THREE.Scene();
+    envScene.add(new THREE.Mesh(new THREE.BoxGeometry(30, 30, 30), new THREE.MeshBasicMaterial({ color: 0x0c0a0a, side: THREE.BackSide })));
+    const panel = (w, h, c, x, y, z) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); envScene.add(m); };
+    panel(10, 6, 0xffffff, -8, 9, 8); panel(4, 14, 0xff6a13, 12, 0, -2); panel(14, 3, 0x9a8f86, 0, -10, 6); panel(6, 6, 0xd8d2ca, 6, 6, 12);
+    scene.environment = new THREE.PMREMGenerator(renderer).fromScene(envScene, 0.04).texture;
+    scene.add(new THREE.HemisphereLight(0xfff2e6, 0x110f0f, 0.35));
+    const key = new THREE.SpotLight(0xffffff, 2.2, 30, 0.6, 0.6); key.position.set(-5, 7, 8); scene.add(key);
+    const rim = new THREE.PointLight(0xff6a13, 2.4, 20); rim.position.set(5, 1, -2); scene.add(rim);
+    const machine = new THREE.Group(); scene.add(machine);
+    const loader = new THREE.TextureLoader();
+    const tex = src => { const t = loader.load(src); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; };
+    const W = 3.1, H = 3.6, R = 0.22;
+    const shape = new THREE.Shape();
+    shape.moveTo(-W/2 + R, -H/2); shape.lineTo(W/2 - R, -H/2); shape.quadraticCurveTo(W/2, -H/2, W/2, -H/2 + R);
+    shape.lineTo(W/2, H/2 - R); shape.quadraticCurveTo(W/2, H/2, W/2 - R, H/2); shape.lineTo(-W/2 + R, H/2);
+    shape.quadraticCurveTo(-W/2, H/2, -W/2, H/2 - R); shape.lineTo(-W/2, -H/2 + R); shape.quadraticCurveTo(-W/2, -H/2, -W/2 + R, -H/2);
+    const DOOR_Y = -0.28, DOOR_R = 1.02;
+    const hole = new THREE.Path(); hole.absarc(0, DOOR_Y, DOOR_R, 0, Math.PI * 2, true); shape.holes.push(hole);
+    const bodyGeo = new THREE.ExtrudeGeometry(shape, { depth: 1.6, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 4, curveSegments: 64 });
+    bodyGeo.translate(0, 0, -1.6);
+    machine.add(new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: 0x1b1919, metalness: 0.55, roughness: 0.32 })));
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(W - 0.3, 0.52, 0.06), new THREE.MeshStandardMaterial({ color: 0x0d0c0c, metalness: 0.3, roughness: 0.5 }));
+    strip.position.set(0, H/2 - 0.42, 0.07); machine.add(strip);
+    const dc = document.createElement("canvas"); dc.width = 512; dc.height = 128; const g = dc.getContext("2d");
+    g.fillStyle = "#120806"; g.fillRect(0, 0, 512, 128); g.fillStyle = "#ff6a13"; g.font = "bold 62px monospace"; g.textBaseline = "middle"; g.fillText("XMR", 26, 68);
+    g.font = "24px monospace"; g.fillStyle = "#ffb07a"; g.fillText("> WASHING", 280, 48); g.fillText("> TRACE 0%", 280, 90);
+    const dtex = new THREE.CanvasTexture(dc); dtex.encoding = THREE.sRGBEncoding;
+    const disp = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.29), new THREE.MeshBasicMaterial({ map: dtex, toneMapped: false }));
+    disp.position.set(0.62, H/2 - 0.42, 0.105); machine.add(disp);
+    const chrome = new THREE.MeshStandardMaterial({ color: 0xd9d6d2, metalness: 1, roughness: 0.18 });
+    [-1.05, -0.55].forEach(x => { const k = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.12, 48), chrome); k.rotation.x = Math.PI / 2; k.position.set(x, H/2 - 0.42, 0.16); machine.add(k); });
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(DOOR_R + 0.08, 0.14, 40, 128), chrome); ring.position.set(0, DOOR_Y, 0.12); machine.add(ring);
+    const gasket = new THREE.Mesh(new THREE.TorusGeometry(DOOR_R - 0.04, 0.07, 24, 96), new THREE.MeshStandardMaterial({ color: 0x080707, roughness: 0.8 })); gasket.position.set(0, DOOR_Y, 0.02); machine.add(gasket);
+    const capA = Math.asin(DOOR_R / 1.7);
+    const glass = new THREE.Mesh(new THREE.SphereGeometry(1.7, 64, 24, 0, Math.PI * 2, 0, capA), new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.04, transparent: true, opacity: 0.16, clearcoat: 1, envMapIntensity: 2.2, depthWrite: false }));
+    glass.rotation.x = Math.PI / 2; glass.position.set(0, DOOR_Y, 0.12 - 1.7 * Math.cos(capA)); glass.renderOrder = 2; machine.add(glass);
+    const pc = document.createElement("canvas"); pc.width = pc.height = 256; const pg = pc.getContext("2d");
+    pg.fillStyle = "#6d6865"; pg.fillRect(0, 0, 256, 256); pg.fillStyle = "#0a0808";
+    for (let y = 8; y < 256; y += 16) for (let x = (y / 16) % 2 ? 16 : 8; x < 256; x += 16) { pg.beginPath(); pg.arc(x, y, 3.2, 0, Math.PI * 2); pg.fill(); }
+    const ptex = new THREE.CanvasTexture(pc); ptex.wrapS = ptex.wrapT = THREE.RepeatWrapping; ptex.repeat.set(10, 3);
+    const drum = new THREE.Group(); drum.position.set(0, DOOR_Y, -0.75); machine.add(drum);
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.98, 0.98, 1.4, 96, 1, true), new THREE.MeshStandardMaterial({ map: ptex, metalness: 0.85, roughness: 0.35, side: THREE.BackSide }));
+    shell.rotation.x = Math.PI / 2; drum.add(shell);
+    const backPlate = new THREE.Mesh(new THREE.CircleGeometry(0.98, 64), new THREE.MeshStandardMaterial({ map: ptex, metalness: 0.85, roughness: 0.4 })); backPlate.position.z = -0.7; drum.add(backPlate);
+    for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 1.3), chrome); const a = i * Math.PI * 2 / 3; l.position.set(Math.cos(a) * 0.88, Math.sin(a) * 0.88, 0); l.rotation.z = a; drum.add(l); }
+    const glow = new THREE.PointLight(0xff7a2a, 3.2, 3.4); glow.position.set(0, DOOR_Y + 0.3, -0.2); machine.add(glow);
+    const coinGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.045, 64);
+    const rimMat = new THREE.MeshStandardMaterial({ color: 0xff7a26, metalness: 1, roughness: 0.28 });
+    const crimeMat = new THREE.MeshStandardMaterial({ map: tex("media/coin_crime.png"), metalness: 0.35, roughness: 0.4 });
+    const xmrMat = new THREE.MeshStandardMaterial({ map: tex("media/coin_xmr.png"), metalness: 0.35, roughness: 0.45 });
+    const coins = [];
+    for (let i = 0; i < 26; i++) {
+      const m = new THREE.Mesh(coinGeo, [rimMat, crimeMat, xmrMat]);
+      m.userData = { off: Math.random(), rate: 0.33 + Math.random() * 0.18, r: 0.62 + Math.random() * 0.22, z: -1.15 + Math.random() * 1.0, sx: (Math.random() - .5) * 6, sy: (Math.random() - .5) * 6, sz: (Math.random() - .5) * 3, jit: (Math.random() - .5) * 0.5 };
+      m.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+      machine.add(m); coins.push(m);
+    }
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    stage.addEventListener("pointermove", e => { const r = stage.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - 0.5; ty = (e.clientY - r.top) / r.height - 0.5; });
+    stage.addEventListener("pointerleave", () => { tx = 0; ty = 0; });
+    const resize = () => { const r = stage.getBoundingClientRect(); if (!r.width) return; renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.position.z = camera.aspect < 0.95 ? 8.4 : 7.0; camera.updateProjectionMatrix(); };
+    addEventListener("resize", resize); resize();
+    const clk = new THREE.Clock(); let t = 0, visible = false;
+    function frame(dt) {
+      t += dt;
+      cx += (tx - cx) * 0.06; cy += (ty - cy) * 0.06;
+      const e = 1 - Math.pow(1 - (window.__washIn ?? 1), 3);
+      machine.rotation.set(0.04 + cy * 0.25, -0.32 + cx * 0.5 + (1 - e) * 1.1, (1 - e) * 0.35);
+      machine.position.set(-7.5 * (1 - e), Math.sin(t * 9) * 0.006, 0);
+      drum.rotation.z = t * 1.9 + (1 - e) * 6;
+      const top = -Math.PI / 2 + Math.PI * 0.78;
+      for (const c of coins) {
+        const u = c.userData, p = (t * u.rate + u.off) % 1;
+        let x, y;
+        if (p < 0.62) { const a = -Math.PI / 2 + (p / 0.62) * Math.PI * 0.78 + u.jit * 0.2; x = Math.cos(a) * u.r; y = Math.sin(a) * u.r; }
+        else { const s = (p - 0.62) / 0.38, a0 = top + u.jit * 0.2, x0 = Math.cos(a0) * u.r, y0 = Math.sin(a0) * u.r, x1 = u.jit * 0.6, y1 = -u.r; x = x0 + (x1 - x0) * s; y = y0 + (y1 - y0) * s * s; }
+        c.position.set(x, y + DOOR_Y, u.z);
+        c.rotation.x += u.sx * dt; c.rotation.y += u.sy * dt; c.rotation.z += u.sz * dt;
+      }
+      renderer.render(scene, camera);
+    }
+    const loop = () => { if (!visible) return; frame(Math.min(clk.getDelta(), 0.05)); requestAnimationFrame(loop); };
+    if (reduce) { frame(0.5); setTimeout(() => frame(0), 600); return; }
+    new IntersectionObserver(es => { const was = visible; visible = es[0].isIntersecting; if (visible && !was) { clk.getDelta(); loop(); } }, { rootMargin: "100px" }).observe(stage);
+    frame(0.016);
+  })();
+</script>
+</body>
+</html>
