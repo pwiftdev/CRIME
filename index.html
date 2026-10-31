@@ -182,6 +182,34 @@ section { position: relative; }
 .js .reveal.in > * { opacity: 1; transform: none; filter: none; }
 .reveal.in > :nth-child(2) { transition-delay: .12s; } .reveal.in > :nth-child(3) { transition-delay: .26s; } .reveal.in > :nth-child(4) { transition-delay: .4s; }
 
+
+/* ---------- /intel: live market data ---------- */
+.intel { padding: 110px 0 120px; border-top: 1px solid var(--line); background: radial-gradient(900px 480px at 80% 30%, rgba(255,106,19,.08), transparent 70%); }
+.intel-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; flex-wrap: wrap; margin-bottom: 36px; }
+.live { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ash); border: 1px solid var(--line); padding: 7px 12px; background: rgba(0,0,0,.3); }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: var(--glow); animation: blink 1.4s steps(1) infinite; }
+.live.lost i { background: var(--alert); box-shadow: 0 0 10px rgba(255,59,47,.6); }
+.intel-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr); gap: 22px; align-items: stretch; }
+@media (max-width: 980px) { .intel-grid { grid-template-columns: minmax(0, 1fr); } }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-content: start; }
+.stat { position: relative; padding: 16px 18px 18px; background: linear-gradient(180deg, rgba(28,22,20,.92), rgba(14,11,11,.95)); border: 1px solid var(--line); box-shadow: 0 30px 50px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.05); display: grid; gap: 6px; overflow: hidden; }
+.stat::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px); }
+.stat .k { font-size: 11px; color: var(--ash); letter-spacing: .08em; text-transform: uppercase; }
+.stat .v { font-family: var(--font-term); font-size: clamp(34px, 3.3vw, 46px); line-height: 1; color: var(--amber-soft); text-shadow: 0 0 12px rgba(255,106,19,.4); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat.hero-stat { grid-column: 1 / -1; padding: 20px 22px 22px; border-color: rgba(255,106,19,.4); }
+.stat.hero-stat .v { font-family: var(--font-display); font-weight: 800; font-variation-settings: "wdth" 112.5; letter-spacing: -.04em; font-size: clamp(44px, 5.4vw, 80px); color: var(--bone); text-shadow: 0 0 30px rgba(255,106,19,.3); }
+.stat .d { font-size: 12px; color: var(--ash); }
+.up { color: var(--amber) !important; } .down { color: var(--alert) !important; }
+.flow { height: 8px; background: rgba(255,59,47,.55); position: relative; margin-top: 6px; }
+.flow span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--amber); box-shadow: var(--glow); width: 50%; transition: width .6s ease; }
+.chart-term { display: flex; flex-direction: column; min-height: 520px; }
+.chart-term .chart { position: relative; flex: 1; min-height: 460px; background: #0b0807; }
+.chart-term iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.chart-off { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--ash); font-size: 13px; }
+.chart-off a { color: var(--amber); }
+.stat .v.flash { animation: flash .8s ease; }
+@keyframes flash { 0% { color: #fff; text-shadow: 0 0 24px rgba(255,180,120,.9); } 100% { } }
+
 /* ---------- /memes: the 3D wall ---------- */
 .memes { padding: 120px 0 90px; border-top: 1px solid var(--line); overflow: clip; }
 .memes .section-head { margin-bottom: 10px; }
@@ -289,10 +317,12 @@ footer p::before { content: "// "; color: var(--amber); }
 <header class="nav" id="nav">
   <a class="brand" href="#top" aria-label="$CRIME home"><img src="media/icon.png" alt=""><span><span class="amber">$</span>CRIME</span></a>
   <nav class="nav-links" aria-label="Sections">
+    <a href="#intel">./intel</a>
     <a href="#rewards">./rewards</a>
     <a href="#memes">./memes</a>
     <a href="#ops">./ops</a>
     <a href="#evidence">./evidence</a>
+    <a data-link="x" href="#">./x</a>
     <span class="status"><i></i>TOR&nbsp;ON &middot; TRACE&nbsp;0%</span>
     <a class="btn" data-link="pump" href="#">Buy $CRIME</a>
   </nav>
@@ -306,7 +336,7 @@ footer p::before { content: "// "; color: var(--amber); }
         <source src="media/crime-hero.mp4" type="video/mp4">
       </video>
     </div>
-    <div class="hud" aria-hidden="true"><span class="rec">REC</span><br>CAM_01 &middot; SUBJECT LOCKED<br><span id="clock">00:00:00</span></div>
+    <div class="hud" aria-hidden="true"><span class="rec">REC</span><br>CAM_01 &middot; SUBJECT LOCKED<br>MC <span data-live="mcap">&mdash;</span><br><span id="clock">00:00:00</span></div>
     <button class="replay" id="replay" type="button">&gt; replay --footage</button>
     <div class="hero-copy">
       <pre class="boot" id="boot">&gt; routing through tor ........ <span class="ok">[ok]</span>
@@ -321,6 +351,7 @@ footer p::before { content: "// "; color: var(--amber); }
       <div class="cta-row">
         <a class="btn" data-link="pump" href="#">Buy on pump.fun</a>
         <a class="btn ghost" data-link="dex" href="#">View chart</a>
+        <a class="btn ghost" data-link="x" href="#">Follow on X</a>
       </div>
     </div>
   </section>
@@ -329,6 +360,33 @@ footer p::before { content: "// "; color: var(--amber); }
     <div class="tape a"><div class="tape-track" data-tape="Access denied|Do not cross|$CRIME|Holders paid in XMR"></div></div>
     <div class="tape b"><div class="tape-track" data-tape="Trace: 0%|Identity: redacted|$CRIME|Spin cycle running"></div></div>
   </div>
+
+
+  <section class="intel" id="intel" aria-labelledby="intel-h">
+    <div class="wrap">
+      <div class="intel-head">
+        <div class="section-head" style="margin-bottom:0">
+          <span class="path">~/<span class="amber">intel</span>/live_feed</span>
+          <h2 class="h2" id="intel-h">Follow the <span class="amber">money</span></h2>
+        </div>
+        <span class="live" id="liveState"><i></i><span id="liveText">connecting to dexscreener&hellip;</span></span>
+      </div>
+      <div class="intel-grid">
+        <div class="stats">
+          <div class="stat hero-stat"><span class="k">Market cap</span><span class="v" data-live="mcap">&mdash;</span><span class="d">FDV <span data-live="fdv">&mdash;</span></span></div>
+          <div class="stat"><span class="k">Price</span><span class="v" data-live="price">&mdash;</span><span class="d"><span data-live="priceSol">&mdash;</span> SOL</span></div>
+          <div class="stat"><span class="k">24h change</span><span class="v" data-live="chg24">&mdash;</span><span class="d">1h <span data-live="chg1">&mdash;</span></span></div>
+          <div class="stat"><span class="k">24h volume</span><span class="v" data-live="vol24">&mdash;</span><span class="d">1h <span data-live="vol1">&mdash;</span></span></div>
+          <div class="stat"><span class="k">Liquidity</span><span class="v" data-live="liq">&mdash;</span><span class="d" data-live="dex">&mdash;</span></div>
+          <div class="stat" style="grid-column: 1 / -1;"><span class="k">24h trades &middot; buys vs sells</span><span class="v"><span data-live="buys">&mdash;</span> <span class="dim" style="font-size:.6em">/</span> <span data-live="sells">&mdash;</span></span><div class="flow"><span id="buyBar"></span></div></div>
+        </div>
+        <div class="term chart-term">
+          <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">chart &middot; $CRIME / SOL</span><a class="dim" data-link="dex" href="#" style="text-decoration:none">open &#8599;</a></div>
+          <div class="chart" id="chart"><div class="chart-off" id="chartOff">loading chart&hellip;<br><a data-link="dex" href="#">open on DexScreener</a></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="laundry" id="rewards" aria-labelledby="rewards-h">
     <div class="wrap laundry-grid">
@@ -381,6 +439,7 @@ footer p::before { content: "// "; color: var(--amber); }
   <span class="k">"launched"</span>:  "pump.fun",
   <span class="k">"supply"</span>:    1000000000,
   <span class="k">"rewards"</span>:   "XMR",
+  <span class="k">"market_cap"</span>: "<span data-live="mcap">loading</span>",
   <span class="k">"holders"</span>:   "all of them",
   <span class="k">"contract"</span>:  "<span data-ca></span>"
 }
@@ -396,6 +455,7 @@ footer p::before { content: "// "; color: var(--amber); }
           <a class="btn" data-link="pump" href="#">pump.fun</a>
           <a class="btn ghost" data-link="dex" href="#">DexScreener</a>
           <a class="btn ghost" data-link="solscan" href="#">Solscan</a>
+          <a class="btn ghost" data-link="x" href="#">X / Twitter</a>
         </div>
       </div>
     </div>
@@ -432,9 +492,9 @@ footer p::before { content: "// "; color: var(--amber); }
 <script>
   // ---- Edit these ----
   const CA = "BN4Z5NtntHhu6p3atEqkeAVi8Bn9Ri2QTv8FD7iupump";
-  const SOCIALS = { "X": "", "Telegram": "" };   // paste links here; empty ones stay hidden
+  const SOCIALS = { "X": "https://x.com/CrimeCoin_PF", "Telegram": "" };   // paste links here; empty ones stay hidden
 
-  const LINKS = { pump: "https://pump.fun/coin/" + CA, dex: "https://dexscreener.com/solana/" + CA, solscan: "https://solscan.io/token/" + CA };
+  const LINKS = { x: SOCIALS.X, pump: "https://pump.fun/coin/" + CA, dex: "https://dexscreener.com/solana/" + CA, solscan: "https://solscan.io/token/" + CA };
   document.querySelectorAll("[data-link]").forEach(a => { a.href = LINKS[a.dataset.link]; a.target = "_blank"; a.rel = "noopener"; });
   document.querySelectorAll("[data-ca]").forEach(el => el.textContent = CA);
   const soc = document.getElementById("socials");
@@ -535,6 +595,48 @@ footer p::before { content: "// "; color: var(--amber); }
     requestAnimationFrame(loop);
   })();
 
+
+
+  // ---------- live market data from DexScreener (public API, refreshed every 30s) ----------
+  (function intel() {
+    const $ = k => document.querySelectorAll(`[data-live="${k}"]`);
+    const set = (k, txt, cls) => $(k).forEach(el => { if (el.textContent !== txt) { el.textContent = txt; el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); } el.classList.remove("up", "down"); if (cls) el.classList.add(cls); });
+    const usd = n => { if (n == null || isNaN(n)) return "—"; const a = Math.abs(n); if (a >= 1e9) return "$" + (n/1e9).toFixed(2) + "B"; if (a >= 1e6) return "$" + (n/1e6).toFixed(2) + "M"; if (a >= 1e3) return "$" + (n/1e3).toFixed(1) + "K"; return "$" + n.toFixed(2); };
+    const sub = "₀₁₂₃₄₅₆₇₈₉";
+    const tiny = (n, pre) => { n = +n; if (!n) return "—"; if (n >= 1) return pre + n.toFixed(4); const s = n.toFixed(14).split(".")[1]; const z = s.match(/^0*/)[0].length; if (z < 4) return pre + n.toPrecision(4); return pre + "0.0" + String(z).split("").map(d => sub[d]).join("") + s.slice(z, z + 4); };
+    const pct = n => n == null ? "—" : (n > 0 ? "+" : "") + Number(n).toFixed(2) + "%";
+    const state = document.getElementById("liveState"), text = document.getElementById("liveText");
+    const chart = document.getElementById("chart"); let chartSet = false, last = 0, pairUrl = null;
+    const setChart = addr => {
+      if (chartSet) return; chartSet = true;
+      const f = document.createElement("iframe"); f.title = "$CRIME price chart on DexScreener"; f.loading = "lazy";
+      f.src = `https://dexscreener.com/solana/${addr}?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=1&chartType=marketCap&interval=15`;
+      chart.appendChild(f); setTimeout(() => { const o = document.getElementById("chartOff"); if (o) o.style.display = "none"; }, 1500);
+    };
+    async function pull() {
+      try {
+        const r = await fetch("https://api.dexscreener.com/latest/dex/tokens/" + CA, { cache: "no-store" });
+        if (!r.ok) throw new Error(r.status);
+        const j = await r.json();
+        const pairs = (Array.isArray(j) ? j : j.pairs || []).filter(p => p.baseToken && p.baseToken.address === CA);
+        if (!pairs.length) { state.classList.add("lost"); text.textContent = "not indexed on dexscreener yet"; setChart(CA); return; }
+        const p = pairs.sort((a, b) => ((b.liquidity || {}).usd || 0) - ((a.liquidity || {}).usd || 0))[0];
+        set("mcap", usd(p.marketCap ?? p.fdv)); set("fdv", usd(p.fdv));
+        set("price", tiny(p.priceUsd, "$")); set("priceSol", tiny(p.priceNative, ""));
+        const c24 = (p.priceChange || {}).h24, c1 = (p.priceChange || {}).h1;
+        set("chg24", pct(c24), c24 > 0 ? "up" : c24 < 0 ? "down" : null); set("chg1", pct(c1), c1 > 0 ? "up" : c1 < 0 ? "down" : null);
+        set("vol24", usd((p.volume || {}).h24)); set("vol1", usd((p.volume || {}).h1));
+        set("liq", usd((p.liquidity || {}).usd)); set("dex", "pool · " + (p.dexId || "dex"));
+        const t = (p.txns || {}).h24 || {}; set("buys", String(t.buys ?? "—")); set("sells", String(t.sells ?? "—"));
+        const tot = (t.buys || 0) + (t.sells || 0); document.getElementById("buyBar").style.width = tot ? (100 * t.buys / tot) + "%" : "50%";
+        state.classList.remove("lost"); last = Date.now(); setChart(p.pairAddress || CA);
+      } catch (e) {
+        state.classList.add("lost"); text.textContent = "signal lost · retrying"; setChart(CA);
+      }
+    }
+    setInterval(() => { if (last) text.textContent = "live · dexscreener · updated " + Math.round((Date.now() - last) / 1000) + "s ago"; }, 1000);
+    pull(); setInterval(pull, 30000);
+  })();
 
   // ---------- the meme wall: a concave 3D wall you look into ----------
   (function memeWall() {
