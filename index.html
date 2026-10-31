@@ -210,6 +210,29 @@ section { position: relative; }
 .stat .v.flash { animation: flash .8s ease; }
 @keyframes flash { 0% { color: #fff; text-shadow: 0 0 24px rgba(255,180,120,.9); } 100% { } }
 
+
+/* ---------- /tools: meme lab ---------- */
+.lab { padding: 110px 0 120px; border-top: 1px solid var(--line); background: radial-gradient(800px 500px at 25% 45%, rgba(255,106,19,.1), transparent 70%); }
+.lab-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(22px, 4vw, 56px); align-items: center; }
+@media (max-width: 960px) { .lab-grid { grid-template-columns: minmax(0, 1fr); } }
+.lab-frame { position: relative; padding: 14px; background: linear-gradient(160deg, #2A2523, #141111 60%); border-radius: 16px; box-shadow: 0 60px 90px -30px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.08), 0 0 60px rgba(255,106,19,.1); }
+.lab-frame canvas { width: 100%; height: auto; aspect-ratio: 1; border-radius: 8px; background: #000; display: block; }
+.lab-frame .tag-rec { position: absolute; top: 26px; right: 28px; font-family: var(--font-term); font-size: 18px; color: var(--alert); text-shadow: 0 0 8px rgba(0,0,0,.9); pointer-events: none; }
+.lab-frame .tag-rec::before { content: "\25CF "; animation: blink 1.2s steps(1) infinite; }
+.lab .term-body { display: grid; gap: 16px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 12px; color: var(--ash); }
+.field label::before { content: "> "; color: var(--amber); }
+.field input { width: 100%; font-family: var(--font-body); font-size: 15px; color: var(--bone); background: rgba(0,0,0,.45); border: 1px solid var(--line); padding: 11px 12px; outline: none; transition: border-color .2s, box-shadow .2s; text-transform: uppercase; }
+.field input:focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber), 0 0 20px rgba(255,106,19,.25); }
+.templates { display: flex; gap: 10px; flex-wrap: wrap; }
+.templates button { padding: 0; width: 64px; height: 64px; border: 1px solid var(--line); background: #000; cursor: pointer; opacity: .55; transition: opacity .2s, border-color .2s, box-shadow .2s; }
+.templates button img { width: 100%; height: 100%; object-fit: cover; }
+.templates button[aria-pressed="true"], .templates button:hover { opacity: 1; border-color: var(--amber); box-shadow: 0 0 16px rgba(255,106,19,.35); }
+.lab-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.lab-actions .btn { font-size: 13px; padding: 11px 14px; }
+.lab-note { font-size: 12px; color: var(--ash); margin: 0; }
+
 /* ---------- /memes: the 3D wall ---------- */
 .memes { padding: 120px 0 90px; border-top: 1px solid var(--line); overflow: clip; }
 .memes .section-head { margin-bottom: 10px; }
@@ -320,6 +343,7 @@ footer p::before { content: "// "; color: var(--amber); }
     <a href="#intel">./intel</a>
     <a href="#rewards">./rewards</a>
     <a href="#memes">./memes</a>
+    <a href="#lab">./meme_lab</a>
     <a href="#ops">./ops</a>
     <a href="#evidence">./evidence</a>
     <a data-link="x" href="#">./x</a>
@@ -411,6 +435,44 @@ footer p::before { content: "// "; color: var(--amber); }
     </div>
     <div class="wall-view" id="wallView" aria-label="A rotating 3D wall of cat privacy memes" role="region">
       <div class="wall" id="wall"></div>
+    </div>
+  </section>
+
+
+  <section class="lab" id="lab" aria-labelledby="lab-h">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="path">~/<span class="amber">tools</span>/meme_lab</span>
+        <h2 class="h2" id="lab-h">Commit a <span class="amber">meme</span></h2>
+        <p class="sub">Pick the suspect, write your top and bottom line, then post it.</p>
+      </div>
+      <div class="lab-grid">
+        <div class="lab-frame tilt" data-tilt="5">
+          <canvas id="memeCanvas" width="1080" height="1080" aria-label="Meme preview"></canvas>
+          <span class="tag-rec">REC</span>
+        </div>
+        <div class="term">
+          <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="t">meme_lab.sh</span><span>v1</span></div>
+          <div class="term-body">
+            <div class="field"><label>suspect</label>
+              <div class="templates" id="templates" role="group" aria-label="Choose an image">
+                <button type="button" data-t="t1" aria-pressed="true" aria-label="Original masked cat photo"><img src="media/templates/t1_thumb.jpg" alt=""></button>
+                <button type="button" data-t="t2" aria-pressed="false" aria-label="Unmasked cat photo"><img src="media/templates/t2_thumb.jpg" alt=""></button>
+                <button type="button" data-t="t3" aria-pressed="false" aria-label="3D masked cat"><img src="media/templates/t3_thumb.jpg" alt=""></button>
+                <button type="button" data-t="t4" aria-pressed="false" aria-label="3D unmasked cat"><img src="media/templates/t4_thumb.jpg" alt=""></button>
+              </div>
+            </div>
+            <div class="field"><label for="topText">top text</label><input id="topText" type="text" maxlength="80" value="Me: I value my privacy" autocomplete="off"></div>
+            <div class="field"><label for="botText">bottom text</label><input id="botText" type="text" maxlength="80" value="Also me: posting cat memes" autocomplete="off"></div>
+            <div class="lab-actions">
+              <button class="btn ghost" type="button" id="memeRandom">Random</button>
+              <button class="btn ghost" type="button" id="memeDownload">Download</button>
+              <button class="btn" type="button" id="memeShare">Share on X</button>
+            </div>
+            <p class="lab-note" id="labNote"># on desktop the image is copied and saved, then X opens. paste it into your post.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -636,6 +698,80 @@ footer p::before { content: "// "; color: var(--amber); }
     }
     setInterval(() => { if (last) text.textContent = "live · dexscreener · updated " + Math.round((Date.now() - last) / 1000) + "s ago"; }, 1000);
     pull(); setInterval(pull, 30000);
+  })();
+
+
+  // ---------- meme lab: canvas meme generator with download + share to X ----------
+  (function memeLab() {
+    const cv = document.getElementById("memeCanvas"), g = cv.getContext("2d"), S = cv.width;
+    const top = document.getElementById("topText"), bot = document.getElementById("botText");
+    const note = document.getElementById("labNote");
+    const imgs = {}; let current = "t1";
+    const RANDOM = [
+      ["Me: I value my privacy", "Also me: posting cat memes"], ["Privacy is not a", "$crime"], ["They can see your wallet", "They can't see mine"],
+      ["Public blockchain?", "In this economy?"], ["Balaclava on", "Trace: 0%"], ["Sender: ??? Receiver: ???", "Amount: ???"],
+      ["Doxx myself for an airdrop?", "No."], ["My bags are clean", "Don't ask how"], ["Not your keys", "Not your face"],
+      ["Chain analysts searching for me", "Me:"], ["Hold $crime", "Get paid in $XMR"], ["If it can't be traced", "It never happened"]
+    ];
+    const load = k => imgs[k] || (imgs[k] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = `media/templates/${k}.jpg`; }));
+    function lines(text, size) {
+      g.font = `${size}px Anton, Impact, "Arial Narrow", sans-serif`;
+      const words = text.toUpperCase().split(/\s+/).filter(Boolean), out = []; let line = "";
+      for (const w of words) { const t = line ? line + " " + w : w; if (g.measureText(t).width > S * 0.9 && line) { out.push(line); line = w; } else line = t; }
+      if (line) out.push(line); return out;
+    }
+    function block(text, atTop) {
+      if (!text.trim()) return;
+      // prefer one line down to 70px, then two lines down to 56px, then up to three
+      let size = 104, ls = lines(text, size);
+      for (const [maxLines, minSize] of [[1, 70], [2, 56], [3, 36]]) {
+        size = 104;
+        while (size >= minSize) { ls = lines(text, size); if (ls.length <= maxLines) break; size -= 2; }
+        if (ls.length <= maxLines) break;
+      }
+      g.textAlign = "center"; g.textBaseline = atTop ? "top" : "bottom"; g.lineJoin = "round";
+      g.lineWidth = size * 0.14; g.strokeStyle = "#000"; g.fillStyle = "#fff";
+      const lh = size * 1.06;
+      ls.forEach((l, i) => {
+        const y = atTop ? S * 0.035 + i * lh : S * 0.965 - (ls.length - 1 - i) * lh;
+        g.strokeText(l, S / 2, y); g.fillText(l, S / 2, y);
+      });
+    }
+    async function draw() {
+      const im = await load(current);
+      g.fillStyle = "#110F0F"; g.fillRect(0, 0, S, S);
+      if (im) g.drawImage(im, 0, 0, S, S);
+      block(top.value, true); block(bot.value, false);
+      g.font = "26px Anton, Impact, sans-serif"; g.textAlign = "right"; g.textBaseline = "bottom"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.8)"; g.fillStyle = "rgba(255,106,19,.95)";
+      g.strokeText("$CRIME", S - 18, S - 12); g.fillText("$CRIME", S - 18, S - 12);
+    }
+    (document.fonts && document.fonts.load ? document.fonts.load("80px Anton") : Promise.resolve()).then(draw, draw);
+    top.addEventListener("input", draw); bot.addEventListener("input", draw);
+    document.querySelectorAll("#templates button").forEach(b => b.addEventListener("click", () => {
+      document.querySelectorAll("#templates button").forEach(x => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true"); current = b.dataset.t; draw();
+    }));
+    document.getElementById("memeRandom").addEventListener("click", () => {
+      const [a, z] = RANDOM[(Math.random() * RANDOM.length) | 0]; top.value = a; bot.value = z; draw();
+    });
+    const blob = () => new Promise(res => cv.toBlob(res, "image/png"));
+    const save = b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "crime-meme.png"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+    document.getElementById("memeDownload").addEventListener("click", async () => { await draw(); save(await blob()); showToast("> meme saved"); });
+    document.getElementById("memeShare").addEventListener("click", async () => {
+      await draw(); const b = await blob();
+      const site = location.protocol.startsWith("http") ? location.origin : "";
+      const text = `${top.value} / ${bot.value}\n\nhold $CRIME, get paid in $XMR\n@CrimeCoin_PF\n\nCA: ${CA}${site ? "\n" + site : ""}`;
+      const file = new File([b], "crime-meme.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] }) && matchMedia("(pointer: coarse)").matches) {
+        try { await navigator.share({ files: [file], text }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+      }
+      let copied = false;
+      try { await navigator.clipboard.write([new ClipboardItem({ "image/png": b })]); copied = true; } catch (e) {}
+      if (!copied) save(b);
+      window.open("https://x.com/intent/post?text=" + encodeURIComponent(text), "_blank", "noopener");
+      showToast(copied ? "> image copied. paste it into your post" : "> image saved. attach it to your post");
+      note.textContent = copied ? "# image is on your clipboard. press ctrl+v (cmd+v) in the X composer." : "# image saved to your downloads. attach it in the X composer.";
+    });
   })();
 
   // ---------- the meme wall: a concave 3D wall you look into ----------
